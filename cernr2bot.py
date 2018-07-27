@@ -4,10 +4,12 @@ import time
 import datetime
 import telepot
 import schedule
+import logging
 from telepot.namedtuple import ReplyKeyboardMarkup,KeyboardButton
 from telepot.loop import MessageLoop
 from novae import MenuCache
 
+logging.basicConfig(level=logging.INFO)
 today = datetime.datetime.today().weekday()
 
 def send_day_selector(chat_id):
@@ -15,7 +17,6 @@ def send_day_selector(chat_id):
                    [KeyboardButton(text='Today')],
                    [KeyboardButton(text='Tomorrow')],
                    [KeyboardButton(text='Friday')],
-                   [KeyboardButton(text='All week')],
                    [KeyboardButton(text='Je parle français')],
                ])
     bot.sendMessage(chat_id, 'I can tell you the menu for CERN Restaurant 2. Tell me the day.', reply_markup=keyboard)
@@ -25,13 +26,13 @@ def send_day_selector_fr(chat_id):
                    [KeyboardButton(text='Aujourd\'hui')],
                    [KeyboardButton(text='Demain')],
                    [KeyboardButton(text='Vendredi')],
-                   [KeyboardButton(text='Toute la semaine')],
                    [KeyboardButton(text='I speak English')],
                ])
     bot.sendMessage(chat_id, 'Je peux vous dire le menu au CERN Restaurant 2. Dites-moi le jour.', reply_markup=keyboard)
 
 def handle(msg):
     content_type, chat_type, chat_id = telepot.glance(msg)
+    logging.info('Message received: chat_id=' + str(chat_id) + ', first_name=' + msg['chat']['first_name'] + ', chat_type=' + chat_type + ', content_type=' + content_type)
     if content_type == 'text':
         command = msg['text'].lower()
         if command == 'all week':
@@ -61,16 +62,20 @@ def handle(msg):
         elif command == 'mardi':
             bot.sendMessage(chat_id, menus.menu_fr.day_menu(1), parse_mode='HTML')
         elif command == 'mercredi':
-            bot.sendMessage(chat_id, menus.menu_fr.day_menu(0), parse_mode='HTML')
+            bot.sendMessage(chat_id, menus.menu_fr.day_menu(2), parse_mode='HTML')
         elif command == 'jeudi':
-            bot.sendMessage(chat_id, menus.menu_fr.day_menu(0), parse_mode='HTML')
+            bot.sendMessage(chat_id, menus.menu_fr.day_menu(3), parse_mode='HTML')
         elif command == 'vendredi':
-            bot.sendMessage(chat_id, menus.menu_fr.day_menu(0), parse_mode='HTML')
+            bot.sendMessage(chat_id, menus.menu_fr.day_menu(4), parse_mode='HTML')
         elif command == u'je parle français':
             send_day_selector_fr(chat_id)
+        elif command == 'i speak english' or command == '/start':
+            send_day_selector(chat_id)
         else:
+            logging.debug('Unknown command: ' + command)
             send_day_selector(chat_id)
     else:
+        logging.debug('Unsupported content type: ' + content_type)
         send_day_selector(chat_id)
 
 # Update from novae website every day
@@ -78,10 +83,10 @@ menus = MenuCache()
 schedule.every().day.at("10:30").do(menus.update)
 
 # Configure bot
-TOKEN = sys.argv[1]
-bot = telepot.Bot(TOKEN)
+token = sys.argv[1]
+bot = telepot.Bot(token)
 MessageLoop(bot, handle).run_as_thread()
-print ('Listening ...')
+logging.info('Listening for new messages.')
 
 # Keep the program running.
 while 1:
