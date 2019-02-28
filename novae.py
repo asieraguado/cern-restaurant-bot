@@ -28,6 +28,7 @@ class CernMenu:
             content = urlopen('http://www.novae-restauration.ch/menus/?x=ad3f8f75fe1e353b972afcce8e375d6e&y=81dc9bdb52d04dc20036dbd8313ed055&z=135').read()
         soup = BeautifulSoup(content, 'lxml')
         self.menu_types = soup.find_all(class_='typeMenu')
+        self.num_menus = len(self.menu_types)
         self.dow = soup.find_all(class_='EnteteMenu')
         self.all_menus = soup.find_all('span')
 
@@ -40,8 +41,8 @@ class CernMenu:
         string = ""
         day = self.dow[downum]
         string += '<i>'+day.string+'</i>\n\n'
-        for i in range(0,10):
-            string += '<b>- '+self.menu_types[i].string+' -</b>\n'+re.sub('( [ \n])+', '', self.all_menus[10*downum+i].string)+'\n\n'
+        for i in range(0,self.num_menus):
+            string += '<b>- '+self.menu_types[i].string+' -</b>\n'+re.sub('( [ \n])+', '', self.all_menus[self.num_menus*downum+i].string)+'\n\n'
         return string
 
     def week_menu(self):
