@@ -22,10 +22,10 @@ class CernMenu:
     def __init__(self, in_english = False):
         if (in_english):
             self.lang = 'en'
-            content = urlopen('http://www.novae-restauration.ch/menus/?x=ad3f8f75fe1e353b972afcce8e375d6e&y=81dc9bdb52d04dc20036dbd8313ed055&z=135&lang=en').read()
+            content = urlopen('http://www.novae-restauration.ch/menus/menu-week/cern/21?lang=en').read()
         else:
             self.lang = 'fr'
-            content = urlopen('http://www.novae-restauration.ch/menus/?x=ad3f8f75fe1e353b972afcce8e375d6e&y=81dc9bdb52d04dc20036dbd8313ed055&z=135').read()
+            content = urlopen('http://www.novae-restauration.ch/menus/menu-week/cern/21').read()
         soup = BeautifulSoup(content, 'lxml')
         self.menu_types = soup.find_all(class_='typeMenu')
         self.num_menus = len(self.menu_types)
